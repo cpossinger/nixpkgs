@@ -33,7 +33,7 @@ jobs:
       - name: Sync nixos-unstable branch
         run: |
           # Switch to nixos-unstable branch
-          git checkout nixos-unstable
+          git checkout origin/nixos-unstable
           
           # Merge latest changes from upstream
           git merge upstream/nixos-unstable --no-edit
