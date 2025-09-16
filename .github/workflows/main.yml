@@ -1,0 +1,60 @@
+name: Sync NixOS Unstable
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  # Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/NixOS/nixpkgs.git 
+          git fetch upstream
+
+      - name: Sync nixos-unstable branch
+        run: |
+          # Switch to nixos-unstable branch
+          git checkout nixos-unstable
+          
+          # Merge latest changes from upstream
+          git merge upstream/nixos-unstable --no-edit
+          
+          # Push updated nixos-unstable branch
+          git push origin nixos-unstable
+
+      - name: Merge into nixos-unstable-without-rustdesk
+        run: |
+          # Switch to or create the target branch
+          git checkout nixos-unstable-without-rustdesk
+          
+          # Merge the updated nixos-unstable branch
+          git merge nixos-unstable --no-edit
+          
+          # Push the updated branch
+          git push origin nixos-unstable-without-rustdesk
+
+      - name: Create summary
+        run: |
+          echo "## Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Synced nixos-unstable from upstream NixOS/nixpkgs" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Merged changes into nixos-unstable-without-rustdesk" >> $GITHUB_STEP_SUMMARY
+          echo "- 📅 Sync completed at $(date)" >> $GITHUB_STEP_SUMMARY
