@@ -19,6 +19,7 @@ jobs:
           filter: blob:none
           fetch-depth: 0 
           persist-credentials: true
+          token: ${{ secrets.EDIT_WORKFLOW_FILES }}
 
       - name: Sync with Upstream
         run: |
